@@ -32,7 +32,6 @@ def customer_ID():
         last_id = df.iloc[-1][0]
         return int(last_id)+1
 
-
 def customer_new(f_name: str, l_name: str, national_code: str, birthdate: str, gender: str, overall_budget: str):
     id = customer_ID()
     person = [id, f_name, l_name, national_code,
@@ -45,6 +44,7 @@ def customer_new(f_name: str, l_name: str, national_code: str, birthdate: str, g
 def customer_datas():
     df = pd.read_csv("CustomersDB.csv", delimiter=",")
     print(df.to_string())
+
 
 
 def customer_remove(id):

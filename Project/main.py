@@ -61,7 +61,8 @@ class Estate:
 
 
 class Request_Buy:
-    pass
+    def __init__(self,budget=None,bedrooms=None,area=None,year_built=None) -> None:
+        pass
 
 
 class Request_Sell(Estate):
@@ -80,3 +81,6 @@ class DataBase:
     pass
     # https://www.codingem.com/python-write-to-csv-file/
     # https://realpython.com/python-csv/
+
+    
+    #https://www.listendata.com/2019/07/how-to-filter-pandas-dataframe.html
