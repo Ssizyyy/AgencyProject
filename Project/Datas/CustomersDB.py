@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 
-# Person Functions
+# Person Database Module
 # Creating DB File
 # --------------------------------------------------
 # Switching Working Directory
@@ -18,7 +18,7 @@ else:
     # f = open("CustomersDB.csv", "x")
     # f.close()
     df = pd.DataFrame(columns=["ID", "FirstName", "LastName",
-                               "NationalCode", "Birthdate", "OverallBudget"])
+                               "NationalCode", "Birthdate", "Gender", "OverallBudget"])
     df.to_csv("CustomersDB.csv", index=False)
 # --------------------------------------------------
 # --------------------------------------------------
@@ -33,9 +33,10 @@ def customer_ID():
         return int(last_id)+1
 
 
-def customer_new(f_name: str, l_name: str, national_code: str, birthdate: str, overall_budget: str):
+def customer_new(f_name: str, l_name: str, national_code: str, birthdate: str, gender: str, overall_budget: str):
     id = customer_ID()
-    person = [id, f_name, l_name, national_code, birthdate, overall_budget]
+    person = [id, f_name, l_name, national_code,
+              birthdate, gender, overall_budget]
     df = pd.read_csv("CustomersDB.csv", delimiter=",")
     df.loc[len(df)] = person
     df.to_csv("CustomersDB.csv", index=False)

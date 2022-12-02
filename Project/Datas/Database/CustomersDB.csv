@@ -1,6 +1,2 @@
-ID,FirstName,LastName,NationalCode,Birthdate,OverallBudget
-0,salam,salam,salam,salam,salam
-1,mmd,mmd,mmd,mmd,mmd
-2,hossein,salehi,8569,1/1/2000,35000
-3,hossein,salehi,8569,1/1/2000,35000
-4,hossein,salehi,8569,1/1/2000,35000
+ID,FirstName,LastName,NationalCode,Birthdate,Gender,OverallBudget
+0,hossein,salehi,8569,1/1/2000,Male,35000

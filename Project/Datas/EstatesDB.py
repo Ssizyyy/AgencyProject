@@ -19,7 +19,7 @@ else:
 # --------------------------------------------------
 
 
-# Estate Database Functions
+# Estate Database Module
 # --------------------------------------------------
 def estate_id():
     df = pd.read_csv("EstatesDB.csv", delimiter=",")
