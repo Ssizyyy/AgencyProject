@@ -1,26 +1,93 @@
 import pandas as pd
 import os
 
-data = pd.read_csv("DataBase.csv")
+
+# ----------------------------------
+# Switching Working Directory
+if os.getcwd().endswith("\Datas\Database"):
+    pass
+else:
+    os.chdir("Project/Datas/Database")
+# ---------------------------------
+# Reading Esates Database
+if os.path.exists("EstatesDB.csv"):
+    data = pd.read_csv("EstatesDB.csv")
+else:
+    print("Database not Found !")
+# ---------------------------------
+# Creating BuyReqs Database
+if os.path.exists("BuyRequestsDB.csv"):
+    pass
+else:
+    df = pd.DataFrame(
+        columns=["ID", "Budget", "Bedrooms", "Area", "YearBuilt"])
+    df.to_csv("BuyRequestsDB.csv", index=False)
+
+# -------------------------------------------------
+# DB functions
+# -------------------------------------------------
+
+
+def buyreq_id():
+    df = pd.read_csv("BuyRequestsDB.csv")
+    if df.empty:
+        return 0
+    else:
+        last_id = df.iloc[-1][0]
+        return int(last_id)+1
+
+
+def buyreq_new(budget: str, bedrooms: str, area: str, year_built: str):
+    id = buyreq_id()
+    df = pd.read_csv("BuyRequestsDB.csv")
+    buyreq = [id, budget, bedrooms, area, year_built]
+    df.loc[len(df)] = buyreq
+    df.to_csv("BuyRequestsDB.csv", index=False)
+
+
+def buyreq_show():
+    df = pd.read_csv("BuyRequestsDB.csv")
+    print(df.to_string())
+
+
+def buyreq_remove(id):
+    df = pd.read_csv("BuyRequestsDB.csv")
+    selection = df[(df.ID == id)]
+    df.drop(selection)
+    df.to_csv("BuyRequestsDB.csv", index=False)
+
+# ---------------------------------------------------------------
 
 
 class Request_Buy:
-    def __init__(self, budget=None, bedrooms=None, area=None, year_built=None) -> None:
+    def __init__(self, budget: str = None, bedrooms: str = None, area: str = None, year_built: str = None) -> None:
         self.budget = budget
         self.bedrooms = bedrooms
         self.area = area
         self.year_built = year_built
+        if "DNS" in budget:
+            pass
+        else:
+            buyreq_new(budget, bedrooms, area, year_built)
 
     def search(self):
-        print(data)
         self.search_budget()
-        print(self.filtered)
         self.search_bedrooms()
-        print(self.filtered)
         self.search_area()
-        print(self.filtered)
         self.search_year_built()
         print(self.filtered)
+
+    def search_full(self):
+        df = pd.read_csv("BuyRequestsDB.csv")
+        for reqs in range(buyreq_id()):
+            self.budget = df.iloc[reqs][1]
+            self.bedrooms = df.iloc[reqs][2]
+            self.area = df.iloc[reqs][3]
+            self.year_built = df.iloc[reqs][4]
+            self.search()
+
+            pass
+
     def search_budget(self):
         if self.budget == None:
             self.filtered = data
@@ -38,8 +105,6 @@ class Request_Buy:
             lower, higher = self.budget.split("-")
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
-            print(data[(data.Price >= lower)
-                                 & (data.Price <= higher)])
             self.filtered = data[(data.Price >= lower)
                                  & (data.Price <= higher)]
         else:
@@ -48,16 +113,15 @@ class Request_Buy:
 
     def search_bedrooms(self):
         if self.bedrooms == None:
-            pass#self.filtered = self.filtered
+            pass  # self.filtered = self.filtered
         if self.bedrooms.endswith(">"):
             bedrooms = self.bedrooms.strip()
-            bedrooms = bedrooms[:-1]
+            bedrooms = bedrooms[: -1]
             bedrooms = int(bedrooms)
-            print(bedrooms)
             self.filtered = self.filtered[(self.filtered.Bedrooms >= bedrooms)]
         elif self.bedrooms.endswith("<"):
             bedrooms = self.bedrooms.strip()
-            bedrooms = bedrooms[:-1]
+            bedrooms = bedrooms[: -1]
             bedrooms = int(bedrooms)
             self.filtered = self.filtered[(self.filtered.Bedrooms <= bedrooms)]
         elif "-" in self.bedrooms:
@@ -65,22 +129,22 @@ class Request_Buy:
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
             self.filtered = self.filtered[(self.filtered.Bedrooms >= lower)
-                                & (self.filtered.Bedrooms <= higher)]
+                                          & (self.filtered.Bedrooms <= higher)]
         else:
             bedrooms = int("".join(self.bedrooms.split()))
             self.filtered = self.filtered[(self.filtered.Bedrooms == bedrooms)]
 
     def search_area(self):
         if self.area == None:
-            pass#self.filtered = self.filtered
+            pass  # self.filtered = self.filtered
         if self.area.endswith(">"):
             area = self.area.strip()
-            area = area[:-1]
+            area = area[: -1]
             area = int(area)
             self.filtered = self.filtered[(self.filtered.Area >= area)]
         elif self.area.endswith("<"):
             area = self.area.strip()
-            area = area[:-1]
+            area = area[: -1]
             area = int(area)
             self.filtered = self.filtered[(self.filtered.Area <= area)]
         elif "-" in self.area:
@@ -88,36 +152,40 @@ class Request_Buy:
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
             self.filtered = self.filtered[(self.filtered.Area >= lower)
-                                 & (self.filtered.Area <= higher)]
+                                          & (self.filtered.Area <= higher)]
         else:
             area = int("".join(self.area.split()))
             self.filtered = self.filtered[(self.filtered.Area == area)]
 
     def search_year_built(self):
         if self.year_built == None:
-            pass#self.filtered = self.filtered
+            pass  # self.filtered = self.filtered
         if self.year_built.endswith(">"):
             year_built = self.year_built.strip()
-            year_built = year_built[:-1]
+            year_built = year_built[: -1]
             year_built = int(year_built)
-            self.filtered = self.filtered[(self.filtered.YearBuilt >= year_built)]
+            self.filtered = self.filtered[(
+                self.filtered.YearBuilt >= year_built)]
         elif self.year_built.endswith("<"):
             year_built = self.year_built.strip()
-            year_built = year_built[:-1]
+            year_built = year_built[: -1]
             year_built = int(year_built)
-            self.filtered = self.filtered[(self.filtered.YearBuilt <= year_built)]
+            self.filtered = self.filtered[(
+                self.filtered.YearBuilt <= year_built)]
         elif "-" in self.year_built:
             lower, higher = self.year_built.split("-")
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
             self.filtered = self.filtered[(self.filtered.YearBuilt >= lower)
-                                 & (self.filtered.YearBuilt <= higher)]
+                                          & (self.filtered.YearBuilt <= higher)]
         else:
             year_built = int("".join(self.year_built.split()))
-            self.filtered = self.filtered[(self.filtered.YearBuilt == year_built)]
+            self.filtered = self.filtered[(
+                self.filtered.YearBuilt == year_built)]
 
 
-# mmd = Request_Buy("300-500","1-3","70-150","2000-2020")
-# mmd.search()
-# print(mmd.filtered)
-# print(data[(data.Price < 300)])
+#3000,5,1000,1,1,2020
+new_req = Request_Buy("3000","5","1000","2020")
+
+mmd =Request_Buy("DNS")
+mmd.search_full()
