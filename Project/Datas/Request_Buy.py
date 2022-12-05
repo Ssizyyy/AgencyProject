@@ -61,6 +61,7 @@ def buyreq_remove(id):
 
 class Request_Buy:
     def __init__(self, budget: str = None, bedrooms: str = None, area: str = None, year_built: str = None) -> None:
+        self.id = buyreq_id()
         self.budget = budget
         self.bedrooms = bedrooms
         self.area = area
@@ -75,20 +76,36 @@ class Request_Buy:
         self.search_bedrooms()
         self.search_area()
         self.search_year_built()
-        print(self.filtered)
+        print("_____________________________________")
+        print(
+            f"Request: \n{self.df.iloc[self.requests_counter].to_string()}")
+        print()
+        print("Match Estates:")
+        print(self.filtered.to_string(index=False))
+        ids = []
+        for index in range(self.filtered.shape[0]):
+            ids.append(self.filtered.iloc[index][0])
+        if len(ids) == 0:
+            print("There's No Match Estate")
+        else:
+            print("Request ID", self.requests_counter,
+                  "Matches With IDs :", *ids, " In Estates")
+        self.requests_counter += 1
+        print("")
+        print("_____________________________________")
 
     def search_full(self):
-        df = pd.read_csv("BuyRequestsDB.csv")
+        self.df = pd.read_csv("BuyRequestsDB.csv")
+        self.requests_counter = 0
         for reqs in range(buyreq_id()):
-            self.budget = df.iloc[reqs][1]
-            self.bedrooms = df.iloc[reqs][2]
-            self.area = df.iloc[reqs][3]
-            self.year_built = df.iloc[reqs][4]
+            self.budget = self.df.iloc[reqs][1]
+            self.bedrooms = self.df.iloc[reqs][2]
+            self.area = self.df.iloc[reqs][3]
+            self.year_built = self.df.iloc[reqs][4]
             self.search()
 
-            pass
-
     def search_budget(self):
+        self.budget = str(self.budget)
         if self.budget == None:
             self.filtered = data
         if self.budget.endswith(">"):
@@ -112,6 +129,7 @@ class Request_Buy:
             self.filtered = data[(data.Price == budget)]
 
     def search_bedrooms(self):
+        self.bedrooms = str(self.bedrooms)
         if self.bedrooms == None:
             pass  # self.filtered = self.filtered
         if self.bedrooms.endswith(">"):
@@ -135,6 +153,7 @@ class Request_Buy:
             self.filtered = self.filtered[(self.filtered.Bedrooms == bedrooms)]
 
     def search_area(self):
+        self.area = str(self.area)
         if self.area == None:
             pass  # self.filtered = self.filtered
         if self.area.endswith(">"):
@@ -158,6 +177,7 @@ class Request_Buy:
             self.filtered = self.filtered[(self.filtered.Area == area)]
 
     def search_year_built(self):
+        self.year_built = str(self.year_built)
         if self.year_built == None:
             pass  # self.filtered = self.filtered
         if self.year_built.endswith(">"):
@@ -184,8 +204,26 @@ class Request_Buy:
                 self.filtered.YearBuilt == year_built)]
 
 
-#3000,5,1000,1,1,2020
-new_req = Request_Buy("3000","5","1000","2020")
+def match_estate(reqest_id: int, estate_id: int):
+    estate_data = pd.read_csv("EstatesDB.csv")
+    requests_data = pd.read_csv("BuyRequestsDB.csv")
+    estate_data_selection = estate_data.loc[estate_data["ID"] == estate_id].index
+    requests_data_selection = requests_data.loc[requests_data["ID"] == reqest_id].index
+    estate_data = estate_data.drop(estate_data_selection)
+    requests_data = requests_data.drop(requests_data_selection)
+    estate_data.to_csv("EstatesDB.csv", index=False)
+    requests_data.to_csv("BuyRequestsDB.csv", index=False)
 
-mmd =Request_Buy("DNS")
+# 3000,5,1000,1,1,2020
+# new_req = Request_Buy("3000","5","1000","2020")
+
+
+mmd = Request_Buy("DNS")
 mmd.search_full()
+match_estate(0,3)
+mmd.search_full()
+
+
+
+# ye header "Active Status" add konam va match kardano ba active boodan ya naboodan neshoon bedam
+# data i ke bala taarif kardam ro ham filter mikonam faghat oonaii ke active == yes hastan
