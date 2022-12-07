@@ -84,3 +84,7 @@ class DataBase:
 
     
     #https://www.listendata.com/2019/07/how-to-filter-pandas-dataframe.html
+
+
+
+#TODO be header custoemra "Estates" ezafe konam va har estate jadidi ke sakhte mishe IDsh bere be "Estates" add she

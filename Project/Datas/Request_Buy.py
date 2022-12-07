@@ -66,16 +66,14 @@ class Request_Buy:
         self.bedrooms = bedrooms
         self.area = area
         self.year_built = year_built
-        if "DNS" in budget:
-            pass
-        else:
-            buyreq_new(budget, bedrooms, area, year_built)
+        buyreq_new(budget, bedrooms, area, year_built)
 
+    @classmethod
     def search(self):
-        self.search_budget()
-        self.search_bedrooms()
-        self.search_area()
-        self.search_year_built()
+        self.search_budget(self)
+        self.search_bedrooms(self)
+        self.search_area(self)
+        self.search_year_built(self)
         print("_____________________________________")
         print(
             f"Request: \n{self.df.iloc[self.requests_counter].to_string()}")
@@ -83,8 +81,8 @@ class Request_Buy:
         print("Match Estates:")
         print(self.filtered.to_string(index=False))
         ids = []
-        for index in range(self.filtered.shape[0]):
-            ids.append(self.filtered.iloc[index][0])
+        for row in range(self.filtered.shape[0]):
+            ids.append(self.filtered.iloc[row][0])
         if len(ids) == 0:
             print("There's No Match Estate")
         else:
@@ -94,6 +92,7 @@ class Request_Buy:
         print("")
         print("_____________________________________")
 
+    @classmethod
     def search_full(self):
         self.df = pd.read_csv("BuyRequestsDB.csv")
         self.requests_counter = 0
@@ -102,7 +101,7 @@ class Request_Buy:
             self.bedrooms = self.df.iloc[reqs][2]
             self.area = self.df.iloc[reqs][3]
             self.year_built = self.df.iloc[reqs][4]
-            self.search()
+            Request_Buy.search()
 
     def search_budget(self):
         self.budget = str(self.budget)
@@ -218,12 +217,15 @@ def match_estate(reqest_id: int, estate_id: int):
 # new_req = Request_Buy("3000","5","1000","2020")
 
 
-mmd = Request_Buy("DNS")
-mmd.search_full()
-match_estate(0,3)
-mmd.search_full()
+
+Request_Buy.search_full()
 
 
 
-# ye header "Active Status" add konam va match kardano ba active boodan ya naboodan neshoon bedam
-# data i ke bala taarif kardam ro ham filter mikonam faghat oonaii ke active == yes hastan
+#TODO ye header "Active Status" add konam va match kardano ba active boodan ya naboodan neshoon bedam
+#TODO data i ke bala taarif kardam ro ham filter mikonam faghat oonaii ke active == yes hastan
+
+#TODO ye database joda bara save kardan ID haii ke be ham match shodan
+
+#TODO ye def match(id1,id2) bara admin ha sakhte she
+#TODO ye def match() bara moghei ke search mikonim be karbar entekhab bede ke az beyne chand ta estate i ke match mishan ba request select kone
