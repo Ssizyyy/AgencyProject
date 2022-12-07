@@ -1,5 +1,6 @@
-ID,Owner's Name,Owner's ID,Price,Bedrooms,Area,StorageRoom,Garage,YearBuilt
-0,mmd,2,35000,2,130,1,1,2020
-1,mmd,2,3000,5,1000,1,1,2020
-2,mmd,2,3000,5,1000,1,1,2020
-3,mmd,2,110,2,100,3,1,2000
+ID,Owner's Name,Owner's ID,Price,Bedrooms,Area,StorageRoom,Garage,YearBuilt,Active
+0,mmd,2,35000,2,130,1,1,2020,True
+1,mmd,2,3000,5,1000,1,1,2020,True
+2,mmd,2,3000,5,1000,1,1,2020,True
+3,mmd,2,110,2,100,3,1,2000,False
+4,ahmad,3,3000,2,130,1,1,2020,True

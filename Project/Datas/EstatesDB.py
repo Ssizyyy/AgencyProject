@@ -11,10 +11,8 @@ else:
 if os.path.exists("EstatesDB.csv"):
     pass
 else:
-    # f = open("EstatesDB.csv", "x")
-    # f.close()
     df = pd.DataFrame(columns=["ID", "Owner's Name", "Owner's ID", "Price", "Bedrooms",
-                               "Area", "StorageRoom", "Garage", "YearBuilt"])
+                               "Area", "StorageRoom", "Garage", "YearBuilt","Active"])
     df.to_csv("EstatesDB.csv", index=False)
 # --------------------------------------------------
 
@@ -30,10 +28,10 @@ def estate_id():
         return int(last_id)+1
 
 
-def estate_new(owners_name: str, owners_id: int, price: int, bedrooms: int, area: int, storage_room: int, garage: int, year_built: str):
+def estate_new(owners_name: str, owners_id: int, price: int, bedrooms: int, area: int, storage_room: int, garage: int, year_built: str,active:bool = True):
     id = estate_id()
     estate = [id, owners_name, owners_id, price,
-              bedrooms, area, storage_room, garage, year_built]
+              bedrooms, area, storage_room, garage, year_built,active]
     df = pd.read_csv("EstatesDB.csv", delimiter=",")
     df.loc[len(df)] = estate
     df.to_csv("EstatesDB.csv", index=False)

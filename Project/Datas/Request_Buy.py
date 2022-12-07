@@ -12,15 +12,17 @@ else:
 # Reading Esates Database
 if os.path.exists("EstatesDB.csv"):
     data = pd.read_csv("EstatesDB.csv")
+    data = data[(data.Active == True)]
+    data = data.reset_index(drop=True)
 else:
-    print("Database not Found !")
+    print("Estates Database not Found !")
 # ---------------------------------
 # Creating BuyReqs Database
 if os.path.exists("BuyRequestsDB.csv"):
     pass
 else:
     df = pd.DataFrame(
-        columns=["ID", "Budget", "Bedrooms", "Area", "YearBuilt"])
+        columns=["ID", "Budget", "Bedrooms", "Area", "YearBuilt","Active"])
     df.to_csv("BuyRequestsDB.csv", index=False)
 
 # -------------------------------------------------
@@ -37,10 +39,10 @@ def buyreq_id():
         return int(last_id)+1
 
 
-def buyreq_new(budget: str, bedrooms: str, area: str, year_built: str):
+def buyreq_new(budget: str, bedrooms: str, area: str, year_built: str , active:bool):
     id = buyreq_id()
     df = pd.read_csv("BuyRequestsDB.csv")
-    buyreq = [id, budget, bedrooms, area, year_built]
+    buyreq = [id, budget, bedrooms, area, year_built,active]
     df.loc[len(df)] = buyreq
     df.to_csv("BuyRequestsDB.csv", index=False)
 
@@ -56,17 +58,20 @@ def buyreq_remove(id):
     df.drop(selection)
     df.to_csv("BuyRequestsDB.csv", index=False)
 
+#TODO ye def baraye change kardane active status
+
 # ---------------------------------------------------------------
 
 
 class Request_Buy:
-    def __init__(self, budget: str = None, bedrooms: str = None, area: str = None, year_built: str = None) -> None:
+    def __init__(self, budget: str = None, bedrooms: str = None, area: str = None, year_built: str = None , active:bool = True) -> None:
         self.id = buyreq_id()
         self.budget = budget
         self.bedrooms = bedrooms
         self.area = area
         self.year_built = year_built
-        buyreq_new(budget, bedrooms, area, year_built)
+        self.active = active
+        buyreq_new(budget, bedrooms, area, year_built,active)
 
     @classmethod
     def search(self):
@@ -79,14 +84,17 @@ class Request_Buy:
             f"Request: \n{self.df.iloc[self.requests_counter].to_string()}")
         print()
         print("Match Estates:")
-        print(self.filtered.to_string(index=False))
+        if self.filtered.empty:
+            pass
+        else:
+            print(self.filtered.to_string(index=False))
         ids = []
         for row in range(self.filtered.shape[0]):
             ids.append(self.filtered.iloc[row][0])
         if len(ids) == 0:
             print("There's No Match Estate")
         else:
-            print("Request ID", self.requests_counter,
+            print("Request ID", self.df.iloc[self.requests_counter][0],
                   "Matches With IDs :", *ids, " In Estates")
         self.requests_counter += 1
         print("")
@@ -95,8 +103,10 @@ class Request_Buy:
     @classmethod
     def search_full(self):
         self.df = pd.read_csv("BuyRequestsDB.csv")
+        self.df = self.df[(self.df.Active == True)]
+        self.df = self.df.reset_index(drop=True)
         self.requests_counter = 0
-        for reqs in range(buyreq_id()):
+        for reqs in range(self.df.shape[0]): # iterating buyrequests ,self.df.shape[0] == row count
             self.budget = self.df.iloc[reqs][1]
             self.bedrooms = self.df.iloc[reqs][2]
             self.area = self.df.iloc[reqs][3]
@@ -204,14 +214,7 @@ class Request_Buy:
 
 
 def match_estate(reqest_id: int, estate_id: int):
-    estate_data = pd.read_csv("EstatesDB.csv")
-    requests_data = pd.read_csv("BuyRequestsDB.csv")
-    estate_data_selection = estate_data.loc[estate_data["ID"] == estate_id].index
-    requests_data_selection = requests_data.loc[requests_data["ID"] == reqest_id].index
-    estate_data = estate_data.drop(estate_data_selection)
-    requests_data = requests_data.drop(requests_data_selection)
-    estate_data.to_csv("EstatesDB.csv", index=False)
-    requests_data.to_csv("BuyRequestsDB.csv", index=False)
+    pass
 
 # 3000,5,1000,1,1,2020
 # new_req = Request_Buy("3000","5","1000","2020")
@@ -221,11 +224,12 @@ def match_estate(reqest_id: int, estate_id: int):
 Request_Buy.search_full()
 
 
-
+#1
 #TODO ye header "Active Status" add konam va match kardano ba active boodan ya naboodan neshoon bedam
 #TODO data i ke bala taarif kardam ro ham filter mikonam faghat oonaii ke active == yes hastan
-
+#Here
+#2
 #TODO ye database joda bara save kardan ID haii ke be ham match shodan
-
+#3
 #TODO ye def match(id1,id2) bara admin ha sakhte she
 #TODO ye def match() bara moghei ke search mikonim be karbar entekhab bede ke az beyne chand ta estate i ke match mishan ba request select kone
