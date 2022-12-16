@@ -8,7 +8,7 @@ if os.getcwd().endswith("\Datas\Database"):
 else:
     os.chdir("Project/Datas/Database")
 # ---------------------------------
-if os.path.exists("EstatesDB.csv"):
+if os.path.exists("EstatesDB.csv"): # check if we have database or not
     pass
 else:
     df = pd.DataFrame(columns=["ID", "Owner's Name", "Owner's ID", "Price", "Bedrooms",
@@ -19,7 +19,7 @@ else:
 
 # Estate Database Module
 # --------------------------------------------------
-def estate_id():
+def estate_id(): # function to return next id
     df = pd.read_csv("EstatesDB.csv", delimiter=",")
     if df.empty:
         return 0
@@ -27,7 +27,7 @@ def estate_id():
         last_id = df.iloc[-1][0]
         return int(last_id)+1
 
-
+# function to define new estate in database
 def estate_new(owners_name: str, owners_id: int, price: int, bedrooms: int, area: int, storage_room: int, garage: int, year_built: str,active:bool = True):
     id = estate_id()
     estate = [id, owners_name, owners_id, price,
@@ -37,12 +37,12 @@ def estate_new(owners_name: str, owners_id: int, price: int, bedrooms: int, area
     df.to_csv("EstatesDB.csv", index=False)
 
 
-def estate_datas():
+def estate_datas(): # function to print database
     df = pd.read_csv("EstatesDB.csv", delimiter=",")
     print(df.to_string())
 
 
-def estate_remove(id):
+def estate_remove(id): #function to remove a data by giving ID
     df = pd.read_csv("EstatesDB.csv", delimiter=",")
     selection = df.loc[df["ID"] == id].index
     df = df.drop(selection)
