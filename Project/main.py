@@ -1,8 +1,7 @@
-import os
-import csv
 import Datas.CustomersDB
 import Datas.EstatesDB
 import Datas.AdminsDB
+import Datas.Request_Buy
 # import Project.Datas
 
 
@@ -79,13 +78,6 @@ class Trade():
     # moshakhas kardane Noe darkhast
 
 
-class DataBase:
-    pass
-    # https://www.codingem.com/python-write-to-csv-file/
-    # https://realpython.com/python-csv/
-
-    
-    #https://www.listendata.com/2019/07/how-to-filter-pandas-dataframe.html
 
 
 

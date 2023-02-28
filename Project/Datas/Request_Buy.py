@@ -1,268 +1,481 @@
-import pandas as pd
+import sqlite3 as sql
 import os
 
 
 # ----------------------------------
 # Switching Working Directory
-if os.getcwd().endswith("\Datas\Database"):
-    pass
-else:
-    os.chdir("Project/Datas/Database")
+# if os.getcwd().endswith("\Datas\Database"): #!FIXME ino az comment dar biaram
+#     pass
+# else:
+#     os.chdir("Project/Datas/Database")
 # ---------------------------------
-# Reading Esates Database
-if os.path.exists("EstatesDB.csv"):
-    estate_data = pd.read_csv("EstatesDB.csv")
-    estate_data = estate_data[(estate_data.Active == True)]
-    estate_data = estate_data.reset_index(drop=True)
-else:
-    print("Estates Database not Found !")
-# ---------------------------------
-# Creating / Reading BuyReqs Database
-if os.path.exists("BuyRequestsDB.csv"):
-    requests_data = pd.read_csv("BuyRequestsDB.csv")
-    requests_data = requests_data[(requests_data.Active == True)]
-    requests_data = requests_data.reset_index(drop=True)
-else:
-    df = pd.DataFrame(
-        columns=["ID", "Budget", "Bedrooms", "Area", "YearBuilt", "Active"])
-    df.to_csv("BuyRequestsDB.csv", index=False)
-
-# -------------------------------------------------
-# Creating Matched (Estate,BuyRequest) DataBase
-if os.path.exists("MatchedEstates.csv"):
-    mathed_data = pd.read_csv("MatchedEstates.csv")
-else:
-    df = pd.DataFrame(columns=["Estate's ID", "Owner's Name", "Owner's ID", "Price", "Bedrooms",
-                               "Area", "StorageRoom", "Garage", "YearBuilt", "Request's ID", "Budget", "Bedrooms", "Area", "YearBuilt"]
-                      )
-    df.to_csv("MatchedEstates.csv", index=False)
-
-
 # Request DB functions
 # -------------------------------------------------
-def buyreq_id():
-    df = pd.read_csv("BuyRequestsDB.csv")
-    if df.empty:
-        return 0
-    else:
-        last_id = df.iloc[-1][0]
-        return int(last_id)+1
 
+def buyreq_new(budget: int, bedrooms: int, area: int, year_built: int, address: str, activation: bool):
+    lst = (budget, bedrooms, area, year_built, address, activation)
 
-def buyreq_new(budget: str, bedrooms: str, area: str, year_built: str, active: bool):
-    id = buyreq_id()
-    df = pd.read_csv("BuyRequestsDB.csv")
-    buyreq = [id, budget, bedrooms, area, year_built, active]
-    df.loc[len(df)] = buyreq
-    df.to_csv("BuyRequestsDB.csv", index=False)
+    conn = sql.connect('database.db')
+    cur = conn.cursor()
+    cur.execute("""--sql
+    INSERT INTO requests VALUES (?,?,?,?,?,?)    
+    ;""", lst)
+    conn.commit()
+    conn.close()
 
 
 def buyreq_show():
-    df = pd.read_csv("BuyRequestsDB.csv")
-    print(df.to_string())
-
-
-def buyreq_remove(id):
-    df = pd.read_csv("BuyRequestsDB.csv")
-    selection = df[(df.ID == id)]
-    df.drop(selection)
-    df.to_csv("BuyRequestsDB.csv", index=False)
-
-
+    conn = sql.connect("database.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM requests WHERE activation NOT NULL")
+    print(cur.fetchall())
 # ---------------------------------------------------------------
 
 # MathedEstates DB functions
 # -------------------------------------------------
-def database_match_new():
 
-    pass
-# TODO ino kamel konam
-# "Estate's ID", "Owner's Name", "Owner's ID", "Price", "Bedrooms",
-    #  "Area", "StorageRoom", "Garage", "YearBuilt", "Request's ID", "Budget", "Bedrooms", "Area", "YearBuilt"
+
+def database_match_new(*args):
+
+    lst = (args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7],
+           args[8], args[9], args[10], args[11], args[12], args[13], args[14])
+    conn = sql.connect("database.db")
+    cur = conn.cursor()
+    cur.execute("""--sql
+    INSERT INTO mathed VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ;""", lst)
+    conn.commit()
+    conn.close()
 
 
 # -------------------------------------------------
 class Request_Buy:
-    def __init__(self, budget: str = None, bedrooms: str = None, area: str = None, year_built: str = None, active: bool = True) -> None:
-        self.id = buyreq_id()
+    def __init__(self, budget: str = None, bedrooms: str = None, area: str = None, year_built: str = None, address: str = None, active: bool = True) -> None:
         self.budget = budget
         self.bedrooms = bedrooms
         self.area = area
         self.year_built = year_built
+        self.address = address
         self.active = active
-        buyreq_new(budget, bedrooms, area, year_built, active)
+        buyreq_new(budget, bedrooms, area, year_built, address, active)
 
     @classmethod
     def search(self):
+
+        global conn,cur
+        conn = sql.connect('database.db')
+        cur = conn.cursor()
+
+
+
+
+
+
+
+        global temp_conn,temp_cur
+
+        temp_conn = sql.connect(':memory:')
+        temp_cur = temp_conn.cursor()
+        temp_cur.execute(
+            """--sql
+                    CREATE TABLE IF NOT EXISTS temp_budget(
+                        owner_id text,
+                        owner_name text,
+                        price int,
+                        bedrooms int,
+                        area int,
+                        storage_room int,
+                        garage int,
+                        year_built int,
+                        activation null
+                    )
+                    ;""")
+
+        temp_cur.execute(
+            """--sql
+                    CREATE TABLE IF NOT EXISTS temp_bedrooms(
+                        owner_id text,
+                        owner_name text,
+                        price int,
+                        bedrooms int,
+                        area int,
+                        storage_room int,
+                        garage int,
+                        year_built int,
+                        activation null
+                    )
+                    ;""")
+
+
+        temp_cur.execute(
+            """--sql
+                    CREATE TABLE IF NOT EXISTS temp_area(
+                        owner_id text,
+                        owner_name text,
+                        price int,
+                        bedrooms int,
+                        area int,
+                        storage_room int,
+                        garage int,
+                        year_built int,
+                        activation null
+                    )
+                    ;""")
+
+        temp_cur.execute(
+            """--sql
+                    CREATE TABLE IF NOT EXISTS temp_year_built(
+                        owner_id text,
+                        owner_name text,
+                        price int,
+                        bedrooms int,
+                        area int,
+                        storage_room int,
+                        garage int,
+                        year_built int,
+                        activation null
+                    )
+                    ;""")
+
+
+        
         self.search_budget(self)
         self.search_bedrooms(self)
         self.search_area(self)
         self.search_year_built(self)
-        print("_____________________________________")
-        print(
-            f"Request: \n{self.df.iloc[self.requests_counter].to_string()}")
-        print()
-        print("Match Estates:")
-        if self.filtered.empty:
-            pass
-        else:
-            print(self.filtered.to_string(index=False))
-        ids = []
-        for row in range(self.filtered.shape[0]):
-            ids.append(self.filtered.iloc[row][0])
-        if len(ids) == 0:
-            print("There's No Match Estate")
-        else:
-            print("Request ID", self.df.iloc[self.requests_counter][0],
-                  "Matches With IDs :", *ids, " In Estates")
-        self.requests_counter += 1
-        print("")
-        print("_____________________________________")
+        temp_cur.execute("SELECT * FROM temp_year_built")
+        return temp_cur.fetchall()
+        # print("_____________________________________")
+        # print(
+        #     f"Request: \n{self.df.iloc[self.requests_counter].to_string()}")
+        # print()
+        # print("Match Estates:")
+        # if self.filtered.empty:
+        #     pass
+        # else:
+        #     print(self.filtered.to_string(index=False))
+        # ids = []
+        # for row in range(self.filtered.shape[0]):
+        #     ids.append(self.filtered.iloc[row][0])
+        # if len(ids) == 0:
+        #     print("There's No Match Estate")
+        # else:
+        #     print("Request ID", self.df.iloc[self.requests_counter][0],
+        #           "Matches With IDs :", *ids, " In Estates")
+        # self.requests_counter += 1
+        # print("")
+        # print("_____________________________________")
 
     @classmethod
     def search_full(self):
-        self.df = pd.read_csv("BuyRequestsDB.csv")
-        self.df = self.df[(self.df.Active == True)]
-        self.df = self.df.reset_index(drop=True)
-        self.requests_counter = 0
+
+        conn = sql.connect("database.db")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM requests")
+        reqs = cur.fetchall()
+
         # iterating buyrequests ,self.df.shape[0] == row count
-        for reqs in range(self.df.shape[0]):
-            self.budget = self.df.iloc[reqs][1]
-            self.bedrooms = self.df.iloc[reqs][2]
-            self.area = self.df.iloc[reqs][3]
-            self.year_built = self.df.iloc[reqs][4]
-            Request_Buy.search()
+
+        result_list = []
+
+        for req in reqs:
+            self.budget = req[0]
+            self.bedrooms = req[1]
+            self.area = req[2]
+            self.year_built = req[3]
+            result_list.append(Request_Buy.search())
+        print(result_list)
 
     def search_budget(self):
-        self.budget = str(self.budget)
+
         if self.budget == None:
-            self.filtered = estate_data
-        if self.budget.endswith(">"):
+            cur.execute("SELECT * FROM estates")
+            lst = temp_cur.fetchall()
+            temp_cur.executemany("INSERT INTO temp_budget VALUES(?,?,?,?,?,?,?,?,?)", lst)
+
+        elif self.budget.endswith(">"):
+            budget = str(self.budget)
             budget = self.budget.strip()
-            budget = budget[:-1]
+            budget = budget[: -1]
             budget = int(budget)
-            self.filtered = estate_data[(estate_data.Price >= budget)]
+
+            cur.execute(f"""--sql
+            SELECT * FROM estates WHERE price >= {budget}
+            ;""")
+
+            lst = cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_budget VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+            #!khodaya komakkkkkkkkkkkk
         elif self.budget.endswith("<"):
+            budget = str(self.budget)
             budget = self.budget.strip()
-            budget = budget[:-1]
+            budget = budget[: -1]
             budget = int(budget)
-            self.filtered = estate_data[(estate_data.Price <= budget)]
+
+            cur.execute(f"""--sql
+            SELECT * FROM estates WHERE price <= {budget}
+            ;""")
+            lst = cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_budget VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
         elif "-" in self.budget:
+            budget = str(self.budget)
             lower, higher = self.budget.split("-")
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
-            self.filtered = estate_data[(estate_data.Price >= lower)
-                                        & (estate_data.Price <= higher)]
-        else:
-            budget = int("".join(self.budget.split()))
-            self.filtered = estate_data[(estate_data.Price == budget)]
 
-    def search_bedrooms(self):
-        self.bedrooms = str(self.bedrooms)
+            cur.execute(f"""--sql
+            SELECT * FROM estates WHERE price BETWEEN {lower} AND {higher}
+            ;""")
+            lst = cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_budget VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+
+        else:
+            budget = str(self.budget)
+            budget = int("".join(self.budget.split()))
+
+            cur.execute(f"""--sql
+            SELECT * FROM estates WHERE price = {budget}
+            ;""")
+            lst = cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_budget VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+
+    def search_bedrooms(self):    
         if self.bedrooms == None:
-            pass  # self.filtered = self.filtered
-        if self.bedrooms.endswith(">"):
+            temp_cur.execute("SELECT * FROM temp_budget")
+            lst = temp_cur.fetchall()
+            temp_cur.executemany("INSERT INTO temp_bedrooms VALUES(?,?,?,?,?,?,?,?,?)", lst)
+            print("none e")
+        elif self.bedrooms.endswith(">"):
+            bedrooms = str(self.bedrooms)
             bedrooms = self.bedrooms.strip()
             bedrooms = bedrooms[: -1]
             bedrooms = int(bedrooms)
-            self.filtered = self.filtered[(self.filtered.Bedrooms >= bedrooms)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_budget WHERE bedrooms >= {bedrooms}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_bedrooms VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+
         elif self.bedrooms.endswith("<"):
+            bedrooms = str(self.bedrooms)
             bedrooms = self.bedrooms.strip()
             bedrooms = bedrooms[: -1]
             bedrooms = int(bedrooms)
-            self.filtered = self.filtered[(self.filtered.Bedrooms <= bedrooms)]
+
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_budget WHERE bedrooms <= {bedrooms}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_bedrooms VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+
         elif "-" in self.bedrooms:
+            bedrooms = str(self.bedrooms)
             lower, higher = self.bedrooms.split("-")
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
-            self.filtered = self.filtered[(self.filtered.Bedrooms >= lower)
-                                          & (self.filtered.Bedrooms <= higher)]
+
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_budget WHERE bedrooms BETWEEN {lower} AND {higher}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_bedrooms VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+
         else:
+            bedrooms = str(self.bedrooms)
             bedrooms = int("".join(self.bedrooms.split()))
-            self.filtered = self.filtered[(self.filtered.Bedrooms == bedrooms)]
+
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_budget WHERE bedrooms = {bedrooms}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_bedrooms VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
 
     def search_area(self):
-        self.area = str(self.area)
+
         if self.area == None:
-            pass  # self.filtered = self.filtered
-        if self.area.endswith(">"):
+            temp_cur.execute("SELECT * FROM temp_bedrooms")
+            lst = temp_cur.fetchall()
+            temp_cur.executemany("INSERT INTO temp_area VALUES(?,?,?,?,?,?,?,?,?)", lst)
+        elif self.area.endswith(">"):
+            area = str(self.area)
             area = self.area.strip()
             area = area[: -1]
             area = int(area)
-            self.filtered = self.filtered[(self.filtered.Area >= area)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_bedrooms WHERE area >= {area}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_area VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
         elif self.area.endswith("<"):
+            area = str(self.area)
             area = self.area.strip()
             area = area[: -1]
             area = int(area)
-            self.filtered = self.filtered[(self.filtered.Area <= area)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_bedrooms WHERE area <= {area}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_area VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
         elif "-" in self.area:
+            area = str(self.area)
             lower, higher = self.area.split("-")
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
-            self.filtered = self.filtered[(self.filtered.Area >= lower)
-                                          & (self.filtered.Area <= higher)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_bedrooms WHERE area BETWEEN {lower} AND {higher}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_area VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
         else:
+            area = str(self.area)
             area = int("".join(self.area.split()))
-            self.filtered = self.filtered[(self.filtered.Area == area)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_bedrooms WHERE area = {area}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_area VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
 
     def search_year_built(self):
-        self.year_built = str(self.year_built)
+        
         if self.year_built == None:
-            pass  # self.filtered = self.filtered
-        if self.year_built.endswith(">"):
+            temp_cur.execute("SELECT * FROM temp_area")
+            lst = temp_cur.fetchall()
+            temp_cur.executemany("INSERT INTO temp_year_built VALUES(?,?,?,?,?,?,?,?,?)", lst)
+
+        elif self.year_built.endswith(">"):
+            year_built = str(self.year_built)
             year_built = self.year_built.strip()
             year_built = year_built[: -1]
             year_built = int(year_built)
-            self.filtered = self.filtered[(
-                self.filtered.YearBuilt >= year_built)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_area WHERE year_built >= {year_built}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_year_built VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
         elif self.year_built.endswith("<"):
+            year_built = str(self.year_built)
             year_built = self.year_built.strip()
             year_built = year_built[: -1]
             year_built = int(year_built)
-            self.filtered = self.filtered[(
-                self.filtered.YearBuilt <= year_built)]
+
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_area WHERE year_built <= {year_built}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_year_built VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
+
         elif "-" in self.year_built:
+            year_built = str(self.year_built)
             lower, higher = self.year_built.split("-")
             lower = int("".join(lower.split()))
             higher = int("".join(higher.split()))
-            self.filtered = self.filtered[(self.filtered.YearBuilt >= lower)
-                                          & (self.filtered.YearBuilt <= higher)]
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_area WHERE year_built BETWEEN {lower} AND {higher}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_year_built VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
         else:
+            year_built = str(self.year_built)
             year_built = int("".join(self.year_built.split()))
-            self.filtered = self.filtered[(
-                self.filtered.YearBuilt == year_built)]
+
+            temp_cur.execute(f"""--sql
+            SELECT * FROM temp_area WHERE year_built = {year_built}
+            ;""")
+            lst = temp_cur.fetchall()
+
+            temp_cur.executemany(
+                """--sql
+                    INSERT INTO temp_year_built VALUES(?,?,?,?,?,?,?,?,?)
+                    ;""", lst)
 
 
 def change_active_status_estate(estate_id: int):
-    estate_df = pd.read_csv("EstatesDB.csv")
-    estate_df.at[estate_id, "Active"] = False
-    estate_df.to_csv("EstatesDB.csv", index=False)
+    conn = sql.connect("database.db")
+    cur = conn.cursor()
+    cur.execute(f"UPDATE estates SET activations=NULL WHERE rowid={estate_id}")
 
 
 def change_active_status_request(request_id: int):
-    buy_req_df = pd.read_csv("BuyRequestsDB.csv")
-    buy_req_df.at[request_id, "Active"] = False
-    buy_req_df.to_csv("BuyRequestsDB.csv", index=False)
+    conn = sql.connect("database.db")
+    cur = conn.cursor()
+    cur.execute(f"UPDATE requests SET activations=NULL WHERE rowid={request_id}")
 
 
 def match_estate_request(request_id: int, estate_id: int):
     change_active_status_request(request_id)
     change_active_status_estate(estate_id)
-    print("Estate :")
-    print(estate_data[(estate_data.ID == estate_id)])
-    print("Mathed With :")
-    print(requests_data[(requests_data.ID == request_id)])
-    update_datas() # updating request_data , estate_data cuz some datas changed
 
-def update_datas():
-    #updating requets datas
-    requests_data = pd.read_csv("BuyRequestsDB.csv")
-    requests_data = requests_data[(requests_data.Active == True)]
-    requests_data = requests_data.reset_index(drop=True)
-    #updaing estate datas
-    estate_data = pd.read_csv("EstatesDB.csv")
-    estate_data = estate_data[(estate_data.Active == True)]
-    estate_data = estate_data.reset_index(drop=True)
+    conn = sql.connect("database.db")
+    cur = conn.cursor()
+    cur.execute(f"SELECT * FROM requests WHERE rowid={request_id}")
+    request = cur.fetchone()
+    cur.execute(f"SELECT * FROM estates WHERE rowid={estate_id}")
+    estate = cur.fetchone()
+    print("Estate :")
+    print(estate)
+    print("Mathed With :")
+    print(request)
+
 #! ta inja neveshtam ke request o match mikone
 
 # 3000,5,1000,1,1,2020
@@ -281,3 +494,9 @@ def update_datas():
 # 3
 # TODO ye def match(id1,id2) bara admin ha sakhte she
 # TODO ye def match() bara moghei ke search mikonim be karbar entekhab bede ke az beyne chand ta estate i ke match mishan ba request select kone
+
+
+# mmd = Request_Buy("300>","1","130","20000101")
+# print()
+print(Request_Buy.search_full())
+# mmd = Request_Buy("300>","2","130","20000101")
